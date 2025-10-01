@@ -1,12 +1,15 @@
+{-# OPTIONS_GHC -Wno-incomplete-patterns #-}
+{-# OPTIONS_GHC -Wno-missing-export-lists #-}
+{-# OPTIONS_GHC -Wno-compat-unqualified-imports #-}
+
 module Parser where
 
 import Data.List
 import Data.Char
-import Data.Maybe
 import Text.Regex
 
 parseExpression :: String -> Either String Expression
-parseExpression s = ((`pushTokens` []) <$> tokenize s) >>= extractExpr
+parseExpression str = ((`pushTokens` []) <$> (tokenize str >>= validateTokens)) >>= extractExpr
   where 
     extractExpr [] = Left "No expression found"
     extractExpr [ExprItem e _] = Right e
@@ -20,6 +23,12 @@ tokenize str = maybe (unmatched str) matched $ matchRegexAll regex str
     unmatched s = Left $ unwords ["Invalid character(s):", show s]
     matched ("", t, suffix, _) = tokenize suffix >>= (prependToken $ strToToken t)
     matched (prefix, _, _, _) = unmatched prefix
+
+validateTokens :: [Token] -> Either String [Token]
+validateTokens [] = Left "No tokens found"
+validateTokens (RParenToken : _) = Left "Right parenthesis cannot start an expression"
+validateTokens (OperatorToken{} : _) = Left "Operator cannot start an expression"
+validateTokens ts = Right ts
 
 prependToken :: Token -> [Token] -> Either String [Token]
 prependToken WhitespaceToken s = Right s
