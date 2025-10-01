@@ -134,10 +134,7 @@ instance Show Expression where
 
 leftParens :: Expression -> Bool
 leftParens (NumberExpression _) = False
-leftParens (ArithmeticExpression left op _) =
-  case comparePriority left op of
-    LT -> True
-    _ -> False
+leftParens (ArithmeticExpression left op _) = comparePriority left op == LT
 
 rightParens :: Expression -> Bool
 rightParens (NumberExpression _) = False
