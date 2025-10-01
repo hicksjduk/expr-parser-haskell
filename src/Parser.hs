@@ -33,7 +33,7 @@ prependToken OperatorToken{} (RParenToken:_) = Left "Operator cannot precede a r
 prependToken RParenToken (LParenToken:_) = Left "Right parenthesis cannot precede a left parenthesis"
 prependToken RParenToken (NumberToken{}:_) = Left "Right parenthesis cannot precede a number"
 prependToken NumberToken{} (LParenToken:_) = Left "Number cannot precede a left parenthesis"
-prependToken NumberToken{} (NumberToken{}:_) = Left "Right parenthesis cannot precede a number"
+prependToken NumberToken{} (NumberToken{}:_) = Left "Number cannot precede a number"
 prependToken t ts = Right $ t : ts
 
 pushTokens :: [Token] -> Stack -> Stack
