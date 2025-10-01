@@ -49,7 +49,6 @@ pushTokens [] = id
 pushTokens (t : ts) = (pushTokens ts) . (pushToken t)
 
 pushToken :: Token -> Stack -> Stack
-pushToken WhitespaceToken = id
 pushToken LParenToken = (LParenItem :)
 pushToken RParenToken = pushRParen
 pushToken (NumberToken n) = pushExpression (NumberExpression n) Nothing
