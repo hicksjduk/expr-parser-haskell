@@ -21,7 +21,7 @@ tokenize str = maybe (unmatched str) matched $ matchRegexAll regex str
   where
     regex = mkRegex "[0-9]+|[ \t\n\r\f\v]+|[-+*/()]"
     unmatched s = Left $ unwords ["Invalid character(s):", show s]
-    matched ("", t, suffix, _) = tokenize suffix >>= (prependToken $ strToToken t)
+    matched ("", t, suffix, _) = tokenize suffix >>= (prependToken $ read t)
     matched (prefix, _, _, _) = unmatched prefix
 
 validateTokens :: [Token] -> Either String [Token]
@@ -96,11 +96,12 @@ instance Show Operation where
   show Multiply = "*"
   show Divide = "/"
 
-strToOp :: String -> Operation
-strToOp "+" = Add
-strToOp "-" = Subtract
-strToOp "*" = Multiply
-strToOp "/" = Divide
+instance Read Operation where
+  readsPrec _ "+" = [(Add, "")]
+  readsPrec _ "-" = [(Subtract, "")]
+  readsPrec _ "*" = [(Multiply, "")]
+  readsPrec _ "/" = [(Divide, "")]
+  readsPrec _ _ = []
 
 eval :: Operation -> Int -> Int -> Int
 eval Add = (+)
@@ -155,13 +156,14 @@ parensIf e True = intercalate (show e) ["(", ")"]
 data Token = LParenToken | RParenToken | NumberToken Int | OperatorToken Operation | WhitespaceToken
   deriving (Show)
 
-strToToken :: String -> Token
-strToToken "(" = LParenToken
-strToToken ")" = RParenToken
-strToToken str@(ch:_)
-  | isDigit ch = NumberToken $ read str
-  | isSpace ch = WhitespaceToken
-  | otherwise = OperatorToken $ strToOp str
+instance Read Token where
+  readsPrec _ "(" = [(LParenToken, "")]
+  readsPrec _ ")" = [(RParenToken, "")]
+  readsPrec _ str@(ch:_)
+    | isDigit ch = [(NumberToken $ read str, "")]
+    | isSpace ch = [(WhitespaceToken, "")]
+    | ch `elem` "+-*/" = [(OperatorToken $ read str, "")]
+    | otherwise = []
 
 data StackItem = LParenItem | ExprItem Expression Priority | OpItem Operation deriving (Show)
 
