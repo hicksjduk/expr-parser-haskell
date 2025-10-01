@@ -11,7 +11,6 @@ import Text.Regex
 parseExpression :: String -> Either String Expression
 parseExpression str = ((`pushTokens` []) <$> (tokenize str >>= validateTokens)) >>= extractExpr
   where 
-    extractExpr [] = Left "No expression found"
     extractExpr [ExprItem e _] = Right e
     extractExpr s = extractExpr $ pushRParen s
 
@@ -25,7 +24,7 @@ tokenize str = maybe (unmatched str) matched $ matchRegexAll regex str
     matched (prefix, _, _, _) = unmatched prefix
 
 validateTokens :: [Token] -> Either String [Token]
-validateTokens [] = Left "No tokens found"
+validateTokens [] = Left "No expression found"
 validateTokens (RParenToken : _) = Left "Right parenthesis cannot start an expression"
 validateTokens (OperatorToken{} : _) = Left "Operator cannot start an expression"
 validateTokens ts = Right ts
