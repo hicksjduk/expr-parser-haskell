@@ -61,9 +61,9 @@ pushRParen ((ExprItem e _) : _ : s) = pushExpression e (Just Atomic) s
 pushExpression :: Expression -> Maybe Priority -> Stack -> Stack
 pushExpression e p [] = [exprItem e p]
 pushExpression e p s@(LParenItem : _) = (exprItem e p) : s
-pushExpression rOp p (OpItem op : (ExprItem lOp _) : s) = 
+pushExpression rOp _ (OpItem op : (ExprItem lOp _) : s) = 
   let newExpr = ArithmeticExpression lOp op rOp
-  in pushExpression newExpr p s
+  in pushExpression newExpr Nothing s
 
 pushOperator :: Operation -> Stack -> Stack
 pushOperator op s@((ExprItem e pr) : theRest) = if priority op > pr
